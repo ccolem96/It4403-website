@@ -1,1 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>Projects | Camillia Rudolph</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f1ea;
+            color: #263238;
+            line-height: 1.6;
+        }
+
+        header {
+            background: #18324a;
+            color: white;
+            padding: 55px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            font-size: 17px;
+            opacity: 0.95;
+            margin: 3px 0;
+        }
+
+        nav {
+            background: white;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 18px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #18324a;
+            font-weight: bold;
+            padding: 10px 18px;
+            border-radius: 25px;
+            transition: 0.2s ease;
+        }
+
+        nav a:hover {
+            background: #dce7ed;
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1050px;
+            margin: 45px auto;
+            padding: 0 22px;
+        }
+
+        .intro {
+            background: white;
+            padding: 42px;
+            border-radius: 24px;
+            box-shadow: 0 6px 20px rgba(24, 50, 74, 0.10);
+            border: 1px solid #e5e0d8;
+            margin-bottom: 30px;
+        }
+
+        .intro h2 {
+            color: #18324a;
+            margin-bottom: 15px;
+            font-size: 32px;
+        }
+
+        .intro p {
+            font-size: 16px;
+        }
+
+        .project-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 22px;
+        }
+
+        .project {
+            background: white;
+            padding: 30px;
+            border-radius: 22px;
+            box-shadow: 0 6px 20px rgba(24, 50, 74, 0.10);
+            border: 1px solid #e5e0d8;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .project:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(24, 50, 74, 0.16);
+        }
+
+        .project-icon {
+            width: 58px;
+            height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #dce7ed;
+            border-radius: 50%;
+            font-size: 27px;
+            margin-bottom: 18px;
+        }
+
+        .project h3 {
+            color: #18324a;
+            margin-bottom: 10px;
+            font-size: 22px;
+        }
+
+        .project p {
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
+
+        .project a {
+            display: inline-block;
+            color: #18324a;
+            font-weight: bold;
+            text-decoration: none;
+            margin-top: 5px;
+        }
+
+        .project a:hover {
+            text-decoration: underline;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 7px 15px;
+            border-radius: 20px;
+            background: #e5edf2;
+            color: #18324a;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        footer {
+            background: #18324a;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 60px;
+        }
+
+        footer p {
+            margin: 5px 0;
+        }
+
+        @media (max-width: 700px) {
+
+            header {
+                padding: 40px 20px;
+            }
+
+            header h1 {
+                font-size: 32px;
+            }
+
+            header p {
+                font-size: 15px;
+            }
+
+            nav {
+                position: static;
+            }
+
+            .intro {
+                padding: 28px 22px;
+            }
+
+            .intro h2 {
+                font-size: 27px;
+            }
+
+            .project-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Camillia Rudolph</h1>
+        <p>IT 4403 — Advanced Web and Mobile App Development</p>
+        <p>Kennesaw State University</p>
+    </header>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="exercises.html">Exercises</a>
+        <a href="labs.html">Labs</a>
+        <a href="projects.html">Projects</a>
+    </nav>
+
+    <main class="container">
+
+        <section class="intro">
+
+            <h2>Projects</h2>
+
+            <p>
+                This page showcases projects completed throughout
+                IT 4403. Project information, descriptions, and links
+                will be added as projects are assigned and completed.
+            </p>
+
+        </section>
+
+        <section class="project-list">
+
+            <!-- Milestone 1 -->
+
+            <div class="project">
+
+                <div class="project-icon">📚</div>
+
+                <h3>Milestone 1: Open Library JSON Data Display</h3>
+
+                <p>
+                    This milestone uses JavaScript and jQuery to read
+                    and display book information from Open Library JSON
+                    files. The project includes a single-book edition
+                    record and multiple search results.
+                </p>
+
+                <p>
+                    <strong>Single Book:</strong>
+                    Displays information from the Open Library edition
+                    record.
+                </p>
+
+                <a href="milestone1-book.html">
+                    View Single Book →
+                </a>
+
+                <br>
+
+                <a href="milestone1-search.html">
+                    View Search Results →
+                </a>
+
+                <br><br>
+
+                <span class="status">Completed</span>
+
+            </div>
+
+
+            <!-- Search Results -->
+
+            <div class="project">
+
+                <div class="project-icon">🔎</div>
+
+                <h3>Open Library Search Results</h3>
+
+                <p>
+                    Displays the provided Open Library search results
+                    for the predetermined search phrase "modern web."
+                    The page uses a loop to process the records in the
+                    JSON docs array.
+                </p>
+
+                <a href="milestone1-search.html">
+                    View Search Results →
+                </a>
+
+                <br><br>
+
+                <span class="status">Completed</span>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer>
+        <p>© 2026 Camillia Rudolph | IT 4403</p>
+    </footer>
+
+</body>
+</html>
