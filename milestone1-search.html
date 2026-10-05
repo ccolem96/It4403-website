@@ -1,1 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Open Library Search Results | Camillia Rudolph</title>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<style>
+body {
+font-family: Arial, sans-serif;
+margin: 0;
+background-color: #f5f1ea;
+color: #263238;
+}
+
+header {
+background-color: #18324a;
+color: white;
+padding: 25px;
+text-align: center;
+}
+
+nav {
+background-color: white;
+padding: 15px;
+text-align: center;
+border-bottom: 1px solid #ddd;
+}
+
+nav a {
+color: #18324a;
+text-decoration: none;
+margin: 0 12px;
+font-weight: bold;
+}
+
+nav a:hover {
+text-decoration: underline;
+}
+
+main {
+max-width: 1100px;
+margin: 30px auto;
+padding: 20px;
+}
+
+.intro {
+background-color: white;
+padding: 25px;
+border-radius: 12px;
+margin-bottom: 25px;
+box-shadow: 0 3px 10px rgba(0,0,0,0.10);
+}
+
+.book-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+gap: 20px;
+}
+
+.book-card {
+background-color: white;
+padding: 20px;
+border-radius: 12px;
+box-shadow: 0 3px 10px rgba(0,0,0,0.10);
+}
+
+.book-card img {
+display: block;
+width: 150px;
+height: 220px;
+object-fit: cover;
+margin: 0 auto 15px;
+border-radius: 6px;
+}
+
+.book-card h2 {
+color: #18324a;
+font-size: 21px;
+}
+
+.book-card p {
+line-height: 1.5;
+}
+
+.label {
+font-weight: bold;
+color: #18324a;
+}
+
+.button {
+display: inline-block;
+background-color: #18324a;
+color: white;
+padding: 9px 14px;
+border-radius: 6px;
+text-decoration: none;
+margin-top: 8px;
+}
+
+.button:hover {
+opacity: 0.85;
+}
+
+.loading {
+text-align: center;
+font-weight: bold;
+}
+
+.error {
+color: #a00000;
+font-weight: bold;
+}
+
+footer {
+text-align: center;
+padding: 25px;
+margin-top: 30px;
+background-color: #18324a;
+color: white;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Open Library Search Results</h1>
+<p>IT 4403 Individual Project - Milestone 1</p>
+</header>
+
+<nav>
+<a href="index.html">Home</a>
+<a href="projects.html">Projects</a>
+<a href="milestone1-book.html">Single Book</a>
+<a href="milestone1-search.html">Search Results</a>
+</nav>
+
+<main>
+
+<section class="intro">
+<h2>Search Results for "Modern Web"</h2>
+<p>
+The books below are displayed from the provided
+Open Library JSON search results.
+</p>
+</section>
+
+<section id="results" class="book-grid">
+<p class="loading">Loading search results...</p>
+</section>
+
+</main>
+
+<footer>
+<p>Camillia Rudolph | IT 4403 | Kennesaw State University</p>
+</footer>
+
+<script>
+
+$(document).ready(function () {
+
+$.getJSON("openlibrary-search.json")
+
+.done(function (data) {
+
+$("#results").empty();
+
+// Loop through the docs array
+$.each(data.docs, function (index, book) {
+
+// Title
+var title = book.title || "Not available";
+
+// Authors
+var authors = "Not available";
+
+if (book.author_name && book.author_name.length > 0) {
+authors = book.author_name.join(", ");
+}
+
+// First publication year
+var year = book.first_publish_year || "Not available";
+
+// Edition count
+var editions = book.edition_count || "Not available";
+
+// ISBN
+var isbn = "Not available";
+
+if (book.isbn && book.isbn.length > 0) {
+isbn = book.isbn.slice(0, 3).join(", ");
+}
+
+// Language
+var language = "Not available";
+
+if (book.language && book.language.length > 0) {
+language = book.language.join(", ");
+}
+
+// Create cover
+var coverHTML = "";
+
+if (book.cover_i) {
+
+var coverURL =
+"https://covers.openlibrary.org/b/id/" +
+book.cover_i +
+"-M.jpg";
+
+coverHTML =
+'<img src="' +
+coverURL +
+'" alt="Book cover for ' +
+title.replace(/"/g, "&quot;") +
+'">';
+
+} else {
+
+coverHTML =
+"<p>Cover image not available.</p>";
+}
+
+// Open Library link
+var linkHTML = "";
+
+if (book.key) {
+
+linkHTML =
+'<a class="button" href="https://openlibrary.org' +
+book.key +
+'" target="_blank">' +
+"View on Open Library" +
+"</a>";
+
+} else {
+
+linkHTML =
+"<p>Open Library link not available.</p>";
+}
+
+// Create book card
+var bookCard =
+'<article class="book-card">' +
+
+coverHTML +
+
+"<h2>" +
+title +
+"</h2>" +
+
+"<p><span class='label'>Author(s):</span> " +
+authors +
+"</p>" +
+
+"<p><span class='label'>First Published:</span> " +
+year +
+"</p>" +
+
+"<p><span class='label'>Edition Count:</span> " +
+editions +
+"</p>" +
+
+"<p><span class='label'>ISBN:</span> " +
+isbn +
+"</p>" +
+
+"<p><span class='label'>Language:</span> " +
+language +
+"</p>" +
+
+linkHTML +
+
+"</article>";
+
+$("#results").append(bookCard);
+
+});
+
+})
+
+.fail(function () {
+
+$("#results").html(
+'<p class="error">Unable to load the search results. Please make sure openlibrary-search.json is in the same folder as this webpage.</p>'
+);
+
+});
+
+});
+
+</script>
+
+</body>
+</html>
 
