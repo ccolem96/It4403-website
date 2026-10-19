@@ -1,0 +1,42 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Bookshelf | Camillia's Library</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/bookshelf.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-wrap">
+      <a class="brand" href="index.html">Camillia's Library</a>
+      <nav aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="bookshelf.html" aria-current="page">My Bookshelf</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="page-intro">
+      <p class="eyebrow">MY PERSONAL COLLECTION</p>
+      <h1>My <em>Bookshelf.</em></h1>
+      <p>Explore my selected books. Choose a title to learn more about it.</p>
+    </section>
+
+    <section aria-labelledby="shelf-heading">
+      <h2 id="shelf-heading">Selected Reads</h2>
+      <p id="shelf-status" class="status-message" role="status">
+        Loading your bookshelf…
+      </p>
+      <div id="bookshelf-grid" class="book-grid"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>IT 4403 · Book information provided by Open Library</p>
+  </footer>
+</body>
+</html>
