@@ -1,0 +1,49 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Details | Camillia's Library</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/details.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-wrap">
+      <a class="brand" href="index.html">Camillia's Library</a>
+      <nav aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="bookshelf.html">My Bookshelf</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container detail-container">
+    <a class="back-link" href="index.html">← Back to Search</a>
+    <p id="detail-status" role="status">Loading book information…</p>
+
+    <article id="book-detail" class="detail-card" hidden>
+      <div class="detail-cover-wrap">
+        <img id="detail-cover" class="detail-cover" alt="Book cover">
+      </div>
+      <div class="detail-copy">
+        <p class="eyebrow">BOOK DETAILS</p>
+        <h1 id="detail-title"></h1>
+        <p>Work ID: <span id="detail-id"></span></p>
+        <h2>About this book</h2>
+        <p id="detail-description"></p>
+        <h2>Subjects</h2>
+        <ul id="detail-subjects"></ul>
+        <a id="open-library-link" href="#" target="_blank" rel="noopener noreferrer">
+          View on Open Library
+        </a>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>IT 4403 · Book information provided by Open Library</p>
+  </footer>
+</body>
+</html>
