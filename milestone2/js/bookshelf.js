@@ -1,7 +1,7 @@
 
 const bookshelfGrid = document.querySelector("#bookshelf-grid");
 const shelfStatus = document.querySelector("#shelf-status");
-
+shelfStatus.textContent = "JavaScript is running...";
 const selectedBooks = [
   "OL18130476W",
   "OL97609W",
