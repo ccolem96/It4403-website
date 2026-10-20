@@ -1,7 +1,7 @@
 
 const bookshelfGrid = document.querySelector("#bookshelf-grid");
 const shelfStatus = document.querySelector("#shelf-status");
-shelfStatus.textContent = "JavaScript is running...";
+
 const selectedBooks = [
   "OL18130476W",
   "OL97609W",
@@ -38,6 +38,10 @@ function createShelfCard(book, workId) {
   const coverLink = document.createElement("a");
   coverLink.className = "book-cover-link";
   coverLink.href = `details.html?id=${encodeURIComponent(workId)}`;
+  coverLink.setAttribute(
+    "aria-label",
+    `View details for ${book.title || "this book"}`
+  );
 
   const coverId = Array.isArray(book.covers)
     ? book.covers.find((id) => id > 0)
@@ -83,36 +87,30 @@ async function loadBookshelf() {
   shelfStatus.textContent = "Loading your selected books...";
   bookshelfGrid.replaceChildren();
 
-  try {
-    const results = await Promise.allSettled(
-      selectedBooks.map((workId) => fetchBook(workId))
-    );
+  const results = await Promise.allSettled(
+    selectedBooks.map((workId) => fetchBook(workId))
+  );
 
-    let loadedCount = 0;
+  let loadedCount = 0;
 
-    results.forEach((result) => {
-      if (result.status === "fulfilled") {
-        const { workId, book } = result.value;
-        bookshelfGrid.appendChild(createShelfCard(book, workId));
-        loadedCount++;
-      } else {
-        console.error("Book loading failed:", result.reason);
-      }
-    });
-
-    if (loadedCount === selectedBooks.length) {
-      shelfStatus.textContent = "All five books loaded successfully.";
-    } else if (loadedCount > 0) {
-      shelfStatus.textContent =
-        `Loaded ${loadedCount} of five books. Some books could not be retrieved.`;
+  results.forEach((result) => {
+    if (result.status === "fulfilled") {
+      const { workId, book } = result.value;
+      bookshelfGrid.appendChild(createShelfCard(book, workId));
+      loadedCount++;
     } else {
-      shelfStatus.textContent =
-        "The books could not be loaded. Please check your connection and try again.";
+      console.error("Book loading failed:", result.reason);
     }
-  } catch (error) {
-    console.error("Bookshelf error:", error);
+  });
+
+  if (loadedCount === selectedBooks.length) {
+    shelfStatus.textContent = "All five books loaded successfully.";
+  } else if (loadedCount > 0) {
     shelfStatus.textContent =
-      "Something went wrong while loading the books. Please refresh and try again.";
+      `Loaded ${loadedCount} of five books. Some books could not be retrieved.`;
+  } else {
+    shelfStatus.textContent =
+      "The books could not be loaded. Please check your connection and refresh the page.";
   }
 }
 
