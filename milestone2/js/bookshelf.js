@@ -1,15 +1,17 @@
 
 const bookshelfGrid = document.querySelector("#bookshelf-grid");
-const shelfStatus = document.querySelector("#shelf-status");
+const shelfStatus = document.querySelector("#shelf-// Five selected classic books from Open Library.
+status");
 
-// Five selected classic books from Open Library.
+
 const selectedBooks = [
-  "OL102749W",
-  "OL15804W",
-  "OL18417W",
-  "OL27448W",
-  "OL166894W"
+  "OL18130476W",
+  "OL97609W",
+  "OL261169W",
+  "OL5720023W",
+  "OL82563W"
 ];
+
 
 function createShelfCard(book, workId) {
   const card = document.createElement("article");
