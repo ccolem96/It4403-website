@@ -2,13 +2,13 @@
 const bookshelfGrid = document.querySelector("#bookshelf-grid");
 const shelfStatus = document.querySelector("#shelf-status");
 
-// Selected Open Library Work IDs for your personal bookshelf.
+// Five selected classic books from Open Library.
 const selectedBooks = [
-  "OL82563W",
-  "OL262758W",
+  "OL102749W",
+  "OL15804W",
+  "OL18417W",
   "OL27448W",
-  "OL15317338W",
-  "OL1793857W"
+  "OL166894W"
 ];
 
 function createShelfCard(book, workId) {
@@ -18,6 +18,10 @@ function createShelfCard(book, workId) {
   const coverLink = document.createElement("a");
   coverLink.className = "book-cover-link";
   coverLink.href = `details.html?id=${encodeURIComponent(workId)}`;
+  coverLink.setAttribute(
+    "aria-label",
+    `View details for ${book.title || "this book"}`
+  );
 
   const coverId = book.covers?.find((id) => id > 0);
 
@@ -29,11 +33,10 @@ function createShelfCard(book, workId) {
     image.loading = "lazy";
 
     image.onerror = () => {
-      image.remove();
       const placeholder = document.createElement("div");
       placeholder.className = "cover-placeholder";
       placeholder.textContent = "Cover unavailable";
-      coverLink.appendChild(placeholder);
+      image.replaceWith(placeholder);
     };
 
     coverLink.appendChild(image);
@@ -59,66 +62,45 @@ function createShelfCard(book, workId) {
 }
 
 async function loadBookshelf() {
-  shelfStatus.textContent = "Loading your selected books…";
+  shelfStatus.textContent = "Loading your selected books...";
+  bookshelfGrid.innerHTML = "";
 
-  const fragment = document.createDocumentFragment();
+  const results = await Promise.allSettled(
+    selectedBooks.map(async (workId) => {
+      const response = await fetch(
+        `https://openlibrary.org/works/${workId}.json`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Unable to load ${workId}`);
+      }
+
+      const book = await response.json();
+      return { workId, book };
+    })
+  );
+
   let successfulBooks = 0;
 
-  try {
-    const results = await Promise.all(
-      selectedBooks.map(async (workId) => {
-        const response = await fetch(
-          `https://openlibrary.org/works/${workId}.json`
-        );
-
-        if (!response.ok) {
-          throw new Error(`Unable to load book ${workId}`);
-        }
-
-        return {
-          workId,
-          book: await response.json()
-        };
-      })
-    );
-
-    results.forEach(({ workId, book }) => {
-      fragment.appendChild(createShelfCard(book, workId));
+  results.forEach((result) => {
+    if (result.status === "fulfilled") {
+      const { workId, book } = result.value;
+      bookshelfGrid.appendChild(createShelfCard(book, workId));
       successfulBooks++;
-    });
+    } else {
+      console.error("A bookshelf book could not be loaded:", result.reason);
+    }
+  });
 
-    bookshelfGrid.appendChild(fragment);
-
-    shelfStatus.textContent = successfulBooks
-      ? `Your bookshelf contains ${successfulBooks} selected books.`
-      : "No books could be loaded.";
-  } catch (error) {
-    console.error("Bookshelf error:", error);
+  if (successfulBooks === selectedBooks.length) {
     shelfStatus.textContent =
-      "Some books could not be loaded. Please refresh the page to try again.";
-
-    // Display any books that can still be retrieved.
-    const individualResults = await Promise.allSettled(
-      selectedBooks.map(async (workId) => {
-        const response = await fetch(
-          `https://openlibrary.org/works/${workId}.json`
-        );
-
-        if (!response.ok) {
-          throw new Error("Book request failed");
-        }
-
-        return { workId, book: await response.json() };
-      })
-    );
-
-    individualResults.forEach((result) => {
-      if (result.status === "fulfilled") {
-        bookshelfGrid.appendChild(
-          createShelfCard(result.value.book, result.value.workId)
-        );
-      }
-    });
+      `Your bookshelf contains ${successfulBooks} selected books.`;
+  } else if (successfulBooks > 0) {
+    shelfStatus.textContent =
+      `Loaded ${successfulBooks} of ${selectedBooks.length} selected books.`;
+  } else {
+    shelfStatus.textContent =
+      "Books could not be loaded. Please check your connection and try again.";
   }
 }
 
