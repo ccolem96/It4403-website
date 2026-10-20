@@ -14,27 +14,76 @@ function showDetailStatus(message, isError = false) {
 }
 
 function getDescription(description) {
-  if (typeof description === "string") {
+  if (typeof description === "string" && description.trim()) {
     return description;
   }
 
-  if (description && typeof description.value === "string") {
+  if (
+    description &&
+    typeof description.value === "string" &&
+    description.value.trim()
+  ) {
     return description.value;
   }
 
   return "No description is available for this book.";
 }
 
+function showCoverPlaceholder() {
+  coverElement.hidden = true;
+
+  let placeholder = document.querySelector("#cover-placeholder");
+
+  if (!placeholder) {
+    placeholder = document.createElement("div");
+    placeholder.id = "cover-placeholder";
+    placeholder.className = "cover-placeholder";
+    placeholder.textContent = "Cover unavailable";
+
+    coverElement.insertAdjacentElement("afterend", placeholder);
+  }
+
+  placeholder.hidden = false;
+}
+
+function showCover(coverId, title) {
+  const existingPlaceholder = document.querySelector("#cover-placeholder");
+
+  if (existingPlaceholder) {
+    existingPlaceholder.hidden = true;
+  }
+
+  if (!coverId) {
+    showCoverPlaceholder();
+    return;
+  }
+
+  coverElement.hidden = false;
+  coverElement.alt = `Cover of ${title}`;
+
+  coverElement.onerror = () => {
+    showCoverPlaceholder();
+  };
+
+  coverElement.src =
+    `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
+}
+
 async function loadBookDetails() {
   const params = new URLSearchParams(window.location.search);
   const workId = params.get("id");
 
+  detailCard.hidden = true;
+
   if (!workId || !/^OL\d+W$/.test(workId)) {
-    showDetailStatus("A valid book Work ID was not provided.", true);
+    showDetailStatus(
+      "A valid book Work ID was not provided. Return to the search page and select a book.",
+      true
+    );
     return;
   }
 
-  showDetailStatus("Loading book details…");
+  showDetailStatus("Loading book details...");
 
   try {
     const response = await fetch(
@@ -46,43 +95,44 @@ async function loadBookDetails() {
     }
 
     const book = await response.json();
+    const title = book.title || "Untitled";
 
-    titleElement.textContent = book.title || "Untitled";
+    titleElement.textContent = title;
     idElement.textContent = workId;
     descriptionElement.textContent = getDescription(book.description);
 
     subjectsElement.replaceChildren();
 
-    (book.subjects || []).slice(0, 10).forEach((subject) => {
-      const item = document.createElement("li");
-      item.textContent = subject;
-      subjectsElement.appendChild(item);
-    });
+    const subjects = Array.isArray(book.subjects)
+      ? book.subjects.slice(0, 10)
+      : [];
 
-    if (subjectsElement.children.length === 0) {
+    if (subjects.length > 0) {
+      subjects.forEach((subject) => {
+        const item = document.createElement("li");
+        item.textContent = subject;
+        subjectsElement.appendChild(item);
+      });
+    } else {
       const item = document.createElement("li");
       item.textContent = "No subjects are available.";
       subjectsElement.appendChild(item);
     }
 
-    const coverId = book.covers?.find((id) => id > 0);
+    const coverId = Array.isArray(book.covers)
+      ? book.covers.find((id) => id > 0)
+      : null;
 
-    if (coverId) {
-      coverElement.src = `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
-      coverElement.alt = `Cover of ${book.title || "this book"}`;
-      coverElement.hidden = false;
-      coverElement.onerror = () => {
-        coverElement.hidden = true;
-      };
-    } else {
-      coverElement.hidden = true;
-    }
+    showCover(coverId, title);
 
-    openLibraryLink.href = `https://openlibrary.org/works/${workId}`;
+    openLibraryLink.href =
+      `https://openlibrary.org/works/${encodeURIComponent(workId)}`;
+
     detailCard.hidden = false;
     showDetailStatus("");
   } catch (error) {
     console.error("Book details error:", error);
+
     showDetailStatus(
       "We couldn't load this book. Please check your connection and try again.",
       true
