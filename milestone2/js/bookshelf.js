@@ -1,4 +1,3 @@
-
 const bookshelfGrid = document.querySelector("#bookshelf-grid");
 const shelfStatus = document.querySelector("#shelf-// Five selected classic books from Open Library.
 status");
