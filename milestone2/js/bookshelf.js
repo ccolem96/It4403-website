@@ -1,6 +1,6 @@
+
 const bookshelfGrid = document.querySelector("#bookshelf-grid");
-const shelfStatus = document.querySelector("#shelf-// Five selected classic books from Open Library.
-status");
+const shelfStatus = document.querySelector("#shelf-status");
 
 const selectedBooks = [
   "OL18130476W",
@@ -10,6 +10,26 @@ const selectedBooks = [
   "OL82563W"
 ];
 
+async function fetchBook(workId) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+
+  try {
+    const response = await fetch(
+      `https://openlibrary.org/works/${workId}.json`,
+      { signal: controller.signal }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Book request failed: ${workId}`);
+    }
+
+    const book = await response.json();
+    return { workId, book };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 function createShelfCard(book, workId) {
   const card = document.createElement("article");
@@ -18,12 +38,10 @@ function createShelfCard(book, workId) {
   const coverLink = document.createElement("a");
   coverLink.className = "book-cover-link";
   coverLink.href = `details.html?id=${encodeURIComponent(workId)}`;
-  coverLink.setAttribute(
-    "aria-label",
-    `View details for ${book.title || "this book"}`
-  );
 
-  const coverId = book.covers?.find((id) => id > 0);
+  const coverId = Array.isArray(book.covers)
+    ? book.covers.find((id) => id > 0)
+    : null;
 
   if (coverId) {
     const image = document.createElement("img");
@@ -53,7 +71,7 @@ function createShelfCard(book, workId) {
   const title = document.createElement("a");
   title.className = "book-title";
   title.href = `details.html?id=${encodeURIComponent(workId)}`;
-  title.textContent = book.title || "Untitled";
+  title.textContent = book.title || "Untitled book";
 
   info.appendChild(title);
   card.append(coverLink, info);
@@ -63,44 +81,38 @@ function createShelfCard(book, workId) {
 
 async function loadBookshelf() {
   shelfStatus.textContent = "Loading your selected books...";
-  bookshelfGrid.innerHTML = "";
+  bookshelfGrid.replaceChildren();
 
-  const results = await Promise.allSettled(
-    selectedBooks.map(async (workId) => {
-      const response = await fetch(
-        `https://openlibrary.org/works/${workId}.json`
-      );
+  try {
+    const results = await Promise.allSettled(
+      selectedBooks.map((workId) => fetchBook(workId))
+    );
 
-      if (!response.ok) {
-        throw new Error(`Unable to load ${workId}`);
+    let loadedCount = 0;
+
+    results.forEach((result) => {
+      if (result.status === "fulfilled") {
+        const { workId, book } = result.value;
+        bookshelfGrid.appendChild(createShelfCard(book, workId));
+        loadedCount++;
+      } else {
+        console.error("Book loading failed:", result.reason);
       }
+    });
 
-      const book = await response.json();
-      return { workId, book };
-    })
-  );
-
-  let successfulBooks = 0;
-
-  results.forEach((result) => {
-    if (result.status === "fulfilled") {
-      const { workId, book } = result.value;
-      bookshelfGrid.appendChild(createShelfCard(book, workId));
-      successfulBooks++;
+    if (loadedCount === selectedBooks.length) {
+      shelfStatus.textContent = "All five books loaded successfully.";
+    } else if (loadedCount > 0) {
+      shelfStatus.textContent =
+        `Loaded ${loadedCount} of five books. Some books could not be retrieved.`;
     } else {
-      console.error("A bookshelf book could not be loaded:", result.reason);
+      shelfStatus.textContent =
+        "The books could not be loaded. Please check your connection and try again.";
     }
-  });
-
-  if (successfulBooks === selectedBooks.length) {
+  } catch (error) {
+    console.error("Bookshelf error:", error);
     shelfStatus.textContent =
-      `Your bookshelf contains ${successfulBooks} selected books.`;
-  } else if (successfulBooks > 0) {
-    shelfStatus.textContent =
-      `Loaded ${successfulBooks} of ${selectedBooks.length} selected books.`;
-  } else {
-    shelfStatus.textContent =
-      "Books could not be loaded. Please check your connection and try again.";
+      "Something went wrong while loading the books. Please refresh and try again.";
   }
 }
 
