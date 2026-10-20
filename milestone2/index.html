@@ -6,22 +6,73 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Book Search | Camillia's Library</title>
   <link rel="stylesheet" href="css/style.css">
+  <script src="js/search.js" defer></script>
 </head>
 <body>
-  <header>
-    <h1>Camillia's Library</h1>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="bookshelf.html">My Bookshelf</a>
-    </nav>
+  <header class="site-header">
+    <div class="nav-wrap">
+      <a class="brand" href="index.html">Camillia's Library</a>
+      <nav aria-label="Main navigation">
+        <a href="index.html" aria-current="page">Home</a>
+        <a href="bookshelf.html">My Bookshelf</a>
+      </nav>
+    </div>
   </header>
-  <main>
-    <h2>Find your next favorite book</h2>
-    <p>Welcome to my Open Library book search project.</p>
-    <form action="index.html" method="get">
-      <input type="search" name="q" placeholder="Search books..." required>
-      <button type="submit">Search</button>
-    </form>
+
+  <main class="container">
+    <section class="hero">
+      <p class="eyebrow">YOUR NEXT CHAPTER STARTS HERE</p>
+      <h1>Find a book worth <em>getting lost in.</em></h1>
+      <p class="hero-copy">Search Open Library and discover your next great read.</p>
+
+      <form id="search-form" class="search-form">
+        <label class="sr-only" for="search-input">Search books</label>
+        <input
+          id="search-input"
+          type="search"
+          placeholder="Try a title, author, or topic..."
+          required
+        >
+        <button type="submit">Search books</button>
+      </form>
+    </section>
+
+    <section class="results-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">THE CATALOG</p>
+          <h2>Book Search</h2>
+        </div>
+
+        <label for="page-size">
+          Results per page
+          <select id="page-size">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="60">60</option>
+          </select>
+        </label>
+      </div>
+
+      <p id="search-status" class="status-message" role="status">
+        Enter a keyword above to begin.
+      </p>
+
+      <div id="search-results" class="book-grid"></div>
+
+      <div id="pagination" class="pagination-wrap" hidden>
+        <label for="page-select">Choose page</label>
+        <select id="page-select"></select>
+      </div>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <p>
+      IT 4403 · Book information provided by
+      <a href="https://openlibrary.org/" target="_blank" rel="noopener noreferrer">Open Library</a>
+    </p>
+  </footer>
 </body>
 </html>
