@@ -1,9 +1,3 @@
-
-// ========================================
-// Open Library - IT 4403 Milestone 3
-// Single Page Application using jQuery AJAX
-// ========================================
-
 const API_URL = "https://openlibrary.org";
 const app = $("#app");
 
