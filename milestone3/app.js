@@ -1,7 +1,13 @@
+
 const API_URL = "https://openlibrary.org";
 const app = $("#app");
 
-// Store saved books
+// PAGINATION SETTINGS
+let currentSearchBooks = [];
+let currentPage = 1;
+const booksPerPage = 10;
+
+// STORE SAVED BOOKS
 let bookshelf = JSON.parse(
     localStorage.getItem("openLibraryBooks") || "[]"
 );
@@ -11,11 +17,15 @@ function showHome() {
     app.empty();
 
     const section = $("<section>");
+
     section.append(
         $("<h2>").text("Welcome to Open Library!")
     );
+
     section.append(
-        $("<p>").text("Discover books, explore new stories, and build your personal bookshelf.")
+        $("<p>").text(
+            "Discover books, explore new stories, and build your personal bookshelf."
+        )
     );
 
     const button = $("<button>")
@@ -38,13 +48,12 @@ function showSearch() {
 
     const form = $("<form>").attr("id", "searchForm");
 
-    const input = $("<input>")
-        .attr({
-            type: "text",
-            id: "searchInput",
-            placeholder: "Enter a book title or author...",
-            required: true
-        });
+    const input = $("<input>").attr({
+        type: "text",
+        id: "searchInput",
+        placeholder: "Enter a book title or author...",
+        required: true
+    });
 
     const button = $("<button>")
         .attr("type", "submit")
@@ -53,6 +62,7 @@ function showSearch() {
     form.append(input, button);
 
     section.append(form);
+
     section.append(
         $("<div>").attr("id", "searchResults")
     );
@@ -68,83 +78,178 @@ function searchBooks(query) {
         $("<p>").text("Searching for books...")
     );
 
+    currentPage = 1;
+
     $.ajax({
         url: API_URL + "/search.json",
         method: "GET",
         data: {
             q: query,
-            limit: 20
+            limit: 50
         },
         dataType: "json",
 
         success: function(data) {
-            results.empty();
+            currentSearchBooks = data.docs || [];
 
-            if (!data.docs || data.docs.length === 0) {
-                results.append(
-                    $("<p>").text("No books found. Try another search.")
+            if (currentSearchBooks.length === 0) {
+                results.empty().append(
+                    $("<p>").text(
+                        "No books found. Try another search."
+                    )
                 );
                 return;
             }
 
-            const grid = $("<div>").addClass("book-grid");
-
-            data.docs.forEach(function(book) {
-
-                const key = book.key;
-                const title = book.title || "Unknown Title";
-
-                const author = book.author_name
-                    ? book.author_name.join(", ")
-                    : "Unknown Author";
-
-                const cover = book.cover_i
-                    ? "https://covers.openlibrary.org/b/id/" +
-                      book.cover_i + "-M.jpg"
-                    : "";
-
-                const card = $("<div>").addClass("book-card");
-
-                if (cover) {
-                    card.append(
-                        $("<img>")
-                            .attr("src", cover)
-                            .attr("alt", "Cover of " + title)
-                    );
-                }
-
-                card.append(
-                    $("<h3>").text(title)
-                );
-
-                card.append(
-                    $("<p>").text("By: " + author)
-                );
-
-                const detailsButton = $("<button>")
-                    .text("View Details")
-                    .attr("data-key", key)
-                    .addClass("detailsBtn");
-
-                const saveButton = $("<button>")
-                    .text("Add to Bookshelf")
-                    .attr("data-key", key)
-                    .addClass("saveBtn");
-
-                card.append(detailsButton, saveButton);
-                grid.append(card);
-            });
-
-            results.append(grid);
+            displaySearchPage();
         },
 
         error: function() {
             results.empty().append(
-                $("<p>").text("Unable to retrieve books. Please try again.")
+                $("<p>").text(
+                    "Unable to retrieve books. Please try again."
+                )
             );
         }
     });
 }
+
+// DISPLAY SEARCH RESULTS WITH PAGINATION
+function displaySearchPage() {
+    const results = $("#searchResults");
+    results.empty();
+
+    const totalBooks = currentSearchBooks.length;
+
+    const totalPages = Math.ceil(
+        totalBooks / booksPerPage
+    );
+
+    const startIndex = (currentPage - 1) * booksPerPage;
+
+    const endIndex = Math.min(
+        startIndex + booksPerPage,
+        totalBooks
+    );
+
+    const pageBooks = currentSearchBooks.slice(
+        startIndex,
+        endIndex
+    );
+
+    results.append(
+        $("<p>").text(
+            "Showing " +
+            (startIndex + 1) +
+            "–" +
+            endIndex +
+            " of " +
+            totalBooks +
+            " books"
+        )
+    );
+
+    const grid = $("<div>").addClass("book-grid");
+
+    pageBooks.forEach(function(book) {
+
+        const key = book.key;
+
+        const title = book.title || "Unknown Title";
+
+        const author = book.author_name
+            ? book.author_name.join(", ")
+            : "Unknown Author";
+
+        const cover = book.cover_i
+            ? "https://covers.openlibrary.org/b/id/" +
+              book.cover_i +
+              "-M.jpg"
+            : "";
+
+        const card = $("<div>").addClass("book-card");
+
+        if (cover) {
+            card.append(
+                $("<img>")
+                    .attr("src", cover)
+                    .attr("alt", "Cover of " + title)
+            );
+        }
+
+        card.append(
+            $("<h3>").text(title)
+        );
+
+        card.append(
+            $("<p>").text("By: " + author)
+        );
+
+        const detailsButton = $("<button>")
+            .text("View Details")
+            .attr("data-key", key)
+            .addClass("detailsBtn");
+
+        const saveButton = $("<button>")
+            .text("Add to Bookshelf")
+            .attr("data-key", key)
+            .addClass("saveBtn");
+
+        card.append(detailsButton, saveButton);
+
+        grid.append(card);
+    });
+
+    results.append(grid);
+
+    // PAGINATION BUTTONS
+    const pagination = $("<div>").addClass("pagination");
+
+    const previousButton = $("<button>")
+        .text("Previous")
+        .attr("id", "previousPage")
+        .prop("disabled", currentPage === 1);
+
+    const pageNumber = $("<span>")
+        .text(
+            " Page " + currentPage + " of " + totalPages + " "
+        );
+
+    const nextButton = $("<button>")
+        .text("Next")
+        .attr("id", "nextPage")
+        .prop("disabled", currentPage === totalPages);
+
+    pagination.append(
+        previousButton,
+        pageNumber,
+        nextButton
+    );
+
+    results.append(pagination);
+}
+
+// NEXT PAGE
+$(document).on("click", "#nextPage", function() {
+
+    const totalPages = Math.ceil(
+        currentSearchBooks.length / booksPerPage
+    );
+
+    if (currentPage < totalPages) {
+        currentPage++;
+        displaySearchPage();
+    }
+});
+
+// PREVIOUS PAGE
+$(document).on("click", "#previousPage", function() {
+
+    if (currentPage > 1) {
+        currentPage--;
+        displaySearchPage();
+    }
+});
 
 // BOOK DETAILS PAGE
 function showBookDetails(key) {
@@ -157,7 +262,9 @@ function showBookDetails(key) {
     const workId = key.replace("/works/", "");
 
     $.ajax({
-        url: API_URL + "/works/" + encodeURIComponent(workId) + ".json",
+        url: API_URL + "/works/" +
+            encodeURIComponent(workId) + ".json",
+
         method: "GET",
         dataType: "json",
 
@@ -167,13 +274,17 @@ function showBookDetails(key) {
             const section = $("<section>");
 
             section.append(
-                $("<h2>").text(book.title || "Book Details")
+                $("<h2>").text(
+                    book.title || "Book Details"
+                )
             );
 
-            let description = book.description || "No description available.";
+            let description = book.description ||
+                "No description available.";
 
             if (typeof description === "object") {
-                description = description.value || "No description available.";
+                description = description.value ||
+                    "No description available.";
             }
 
             section.append(
@@ -186,7 +297,9 @@ function showBookDetails(key) {
                 );
 
                 section.append(
-                    $("<p>").text(book.subjects.slice(0, 10).join(", "))
+                    $("<p>").text(
+                        book.subjects.slice(0, 10).join(", ")
+                    )
                 );
             }
 
@@ -195,12 +308,15 @@ function showBookDetails(key) {
                 .attr("id", "backToSearch");
 
             section.append(backButton);
+
             app.append(section);
         },
 
         error: function() {
             app.empty().append(
-                $("<p>").text("Unable to load book details.")
+                $("<p>").text(
+                    "Unable to load book details."
+                )
             );
 
             app.append(
@@ -217,13 +333,16 @@ function saveBook(key) {
     $.ajax({
         url: API_URL + "/search.json",
         method: "GET",
+
         data: {
             q: "key:" + key,
             limit: 1
         },
+
         dataType: "json",
 
         success: function(data) {
+
             const book = data.docs && data.docs.length
                 ? data.docs[0]
                 : null;
@@ -234,16 +353,20 @@ function saveBook(key) {
             }
 
             if (bookshelf.some(item => item.key === key)) {
-                alert("This book is already on your bookshelf!");
+                alert(
+                    "This book is already on your bookshelf!"
+                );
                 return;
             }
 
             bookshelf.push({
                 key: key,
                 title: book.title || "Unknown Title",
+
                 author: book.author_name
                     ? book.author_name.join(", ")
                     : "Unknown Author",
+
                 cover: book.cover_i || null
             });
 
@@ -256,7 +379,9 @@ function saveBook(key) {
         },
 
         error: function() {
-            alert("Unable to save book. Please try again.");
+            alert(
+                "Unable to save book. Please try again."
+            );
         }
     });
 }
@@ -272,13 +397,19 @@ function showBookshelf() {
     );
 
     if (bookshelf.length === 0) {
+
         section.append(
-            $("<p>").text("Your bookshelf is empty. Search for books to add!")
+            $("<p>").text(
+                "Your bookshelf is empty. Search for books to add!"
+            )
         );
+
     } else {
+
         const grid = $("<div>").addClass("book-grid");
 
         bookshelf.forEach(function(book) {
+
             const card = $("<div>").addClass("book-card");
 
             if (book.cover) {
@@ -286,6 +417,7 @@ function showBookshelf() {
                     $("<img>").attr({
                         src: "https://covers.openlibrary.org/b/id/" +
                             book.cover + "-M.jpg",
+
                         alt: "Cover of " + book.title
                     })
                 );
@@ -305,6 +437,7 @@ function showBookshelf() {
                 .addClass("removeBtn");
 
             card.append(removeButton);
+
             grid.append(card);
         });
 
@@ -315,60 +448,87 @@ function showBookshelf() {
 }
 
 // NAVIGATION EVENTS
-
 $("#homeBtn").on("click", showHome);
 
 $("#searchBtn").on("click", showSearch);
 
 $("#bookshelfBtn").on("click", showBookshelf);
 
-$(document).on("click", "#startSearch", showSearch);
+$(document).on(
+    "click",
+    "#startSearch",
+    showSearch
+);
 
-$(document).on("submit", "#searchForm", function(event) {
-    event.preventDefault();
+// SEARCH FORM
+$(document).on(
+    "submit",
+    "#searchForm",
+    function(event) {
 
-    const query = $("#searchInput").val().trim();
+        event.preventDefault();
 
-    if (query) {
-        searchBooks(query);
+        const query = $("#searchInput").val().trim();
+
+        if (query) {
+            searchBooks(query);
+        }
     }
-});
+);
 
 // VIEW BOOK DETAILS
-$(document).on("click", ".detailsBtn", function() {
-    const key = $(this).attr("data-key");
+$(document).on(
+    "click",
+    ".detailsBtn",
+    function() {
 
-    showBookDetails(key);
-});
+        const key = $(this).attr("data-key");
+
+        showBookDetails(key);
+    }
+);
 
 // ADD BOOK
-$(document).on("click", ".saveBtn", function() {
-    const key = $(this).attr("data-key");
+$(document).on(
+    "click",
+    ".saveBtn",
+    function() {
 
-    saveBook(key);
-});
+        const key = $(this).attr("data-key");
+
+        saveBook(key);
+    }
+);
 
 // REMOVE BOOK
-$(document).on("click", ".removeBtn", function() {
-    const key = $(this).attr("data-key");
+$(document).on(
+    "click",
+    ".removeBtn",
+    function() {
 
-    bookshelf = bookshelf.filter(
-        book => book.key !== key
-    );
+        const key = $(this).attr("data-key");
 
-    localStorage.setItem(
-        "openLibraryBooks",
-        JSON.stringify(bookshelf)
-    );
+        bookshelf = bookshelf.filter(
+            book => book.key !== key
+        );
 
-    showBookshelf();
-});
+        localStorage.setItem(
+            "openLibraryBooks",
+            JSON.stringify(bookshelf)
+        );
+
+        showBookshelf();
+    }
+);
 
 // BACK TO SEARCH
-$(document).on("click", "#backToSearch", showSearch);
+$(document).on(
+    "click",
+    "#backToSearch",
+    showSearch
+);
 
 // START APPLICATION
 $(document).ready(function() {
     showHome();
 });
-
